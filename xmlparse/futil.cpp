@@ -25,7 +25,7 @@ namespace futil
         return read(s.c_str());
     }
 
-    char *readc(const char *fn) {
+    char *readc(const char *fn, int64_t *len=nullptr) {
         std::ifstream in(fn, std::ios::in | std::ios::binary);
         if (in) {
             in.seekg(0, std::ios::end);
@@ -34,6 +34,9 @@ namespace futil
             char *buf = new char[sz + 1];
             in.read(buf, sz);
             buf[sz] = '\0';
+            if (len) {
+                *len = sz;
+            }
             return buf;
         }
         throw (Exc_Create(FileNotFoundError, fn));

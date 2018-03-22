@@ -19,6 +19,7 @@ namespace XML
         EXC_BODY_BASE(XMLParseError, XMLError)
     };
 
+
     class XMLNode {
     public:
         std::string m_tag;
@@ -85,7 +86,11 @@ namespace XML
     class XMLRoot : public XMLNode {
     public:
         std::string m_filename;
-        XMLNodeList m_children;
+        std::string version;
+        std::string encoding;
+
+        XMLRoot(void) : XMLNode() {};
+
         template<typename T>
         XMLRoot(T filename) : XMLNode(),
                                 m_filename(filename) 
