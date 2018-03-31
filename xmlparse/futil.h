@@ -10,7 +10,7 @@ namespace futil
 {
     std::string read(const char *filename);
     std::string read(std::string &filename);
-    char *      readc(const char *filename);
-    char *      readc(std::string &filename);
+    char *      readc(const char *filename, int64_t *len=nullptr);
+    char *      readc(std::string &filename, int64_t *len=nullptr);
 }
 #endif // !FUTIL_H

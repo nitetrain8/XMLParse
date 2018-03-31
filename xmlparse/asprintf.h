@@ -57,7 +57,7 @@ namespace asprintf
                 case '%':
                     switch (*fmt++) {
                         case '\0':
-                            throw PyExc_Create(StringFormattingError, "Invalid format");
+                            throw Exc_Create(StringFormattingError, "Invalid format");
                         case '%':
                             ss << '%';
                             break;

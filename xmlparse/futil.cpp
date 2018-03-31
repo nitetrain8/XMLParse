@@ -11,7 +11,7 @@ namespace futil
         {
             std::string contents;
             in.seekg(0, std::ios::end);
-            contents.resize(in.tellg());
+            contents.resize((const unsigned int)in.tellg());
             in.seekg(0, std::ios::beg);
             in.read(&contents[0], contents.size());
             in.close();
@@ -25,24 +25,24 @@ namespace futil
         return read(s.c_str());
     }
 
-    char *readc(const char *fn, int64_t *len=nullptr) {
+    char *readc(const char *fn, int64_t *len) {
         std::ifstream in(fn, std::ios::in | std::ios::binary);
-        if (in) {
+        if (!in.fail()) {
+            printf("Reading\n"); fflush(stdout);
             in.seekg(0, std::ios::end);
-            int64_t sz = in.tellg();
+            std::streamsize sz = in.tellg();
             in.seekg(0, std::ios::beg);
-            char *buf = new char[sz + 1];
-            in.read(buf, sz);
+            char *buf = new char[static_cast<unsigned int>(sz) + 1];
             buf[sz] = '\0';
             if (len) {
                 *len = sz;
             }
             return buf;
         }
-        throw (Exc_Create(FileNotFoundError, fn));
+        throw Exc_Create(FileNotFoundError, fn);
     }
 
-    char *readc(std::string &s) {
-        return readc(s.c_str());
+    char *readc(std::string &s, int64_t *len) {
+        return readc(s.c_str(), len);
     }
 }

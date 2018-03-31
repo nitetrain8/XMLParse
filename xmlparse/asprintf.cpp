@@ -54,7 +54,6 @@ namespace asprintf
         char *rv = vasprintf(fmt, ap);
         va_end(ap);
         std::string s(rv);
-        //std::cout << rv << std::endl;
         delete[] rv;
         return s;
     }

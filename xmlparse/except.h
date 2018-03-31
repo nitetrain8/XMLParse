@@ -4,16 +4,16 @@
 #define MY_EXC_H
 
 #include <sstream>
-
+#include <memory>
 
 #define EXC_BODY_BASE(cls, super) public: \
                                         template <typename T, typename Q, typename Z> \
-                                         cls(T msg, Q func, Z file, int line) : super(msg, func, file, line) \
+                                         cls(T arg, Q func, Z file, int line) : super(arg, func, file, line) \
                                          { \
                                              init(); \
                                          }; \
                                         template <typename Q, typename Z> \
-                                         cls(std::string &msg, Q func, Z file, int line) : super(msg, func, file, line) \
+                                         cls(std::string &arg, Q func, Z file, int line) : super(arg, func, file, line) \
                                          { \
                                              init(); \
                                          }; \
@@ -41,6 +41,14 @@ static void _strip_ext(std::string &s) {
     }
 }
 
+static const char *str_copy(const std::string &src) {
+    auto l = src.length();
+    char *dst = new char[l];
+    memcpy(dst, src.c_str(), l);
+    dst[l] = '\0';
+    return dst;
+}
+
 template<typename T>
 static std::string strip_ext(T cstr) {
     std::string s(cstr);
@@ -58,13 +66,14 @@ template <typename Sub>
 class Exception : public BaseException {
 public:
     std::string m_msg;
+    std::string m_arg;
     std::string m_func;
     std::string m_file;
     int         m_lineno;
     template <typename T, typename Q, typename Z>
-    Exception(T msg, Q func, Z file, int line) :
+    Exception(T arg, Q func, Z file, int line) :
         BaseException(),
-        m_msg(msg),
+        m_arg(arg),
         m_func(func),
         m_file(strip_ext(file)),
         m_lineno(line)
@@ -72,9 +81,9 @@ public:
         init();
     };
     template <typename Q, typename Z>
-    Exception(std::string &msg, Q func, Z file, int line) :
+    Exception(std::string &arg, Q func, Z file, int line) :
         BaseException(),
-        m_msg(msg),
+        m_arg(arg),
         m_func(func),
         m_file(strip_ext(file)),
         m_lineno(line)
@@ -83,19 +92,27 @@ public:
     };
     virtual ~Exception() throw() {};
     virtual const char *what() const throw() {
-        return asdf_exc_helper("%s(%s::%s::%d): %s", CLSNAME(Sub), m_file.c_str(), m_func.c_str(), m_lineno, m_msg.c_str()).c_str();
+        return str_copy(m_msg);
     }
-    void init(void) {};
+
+    void init(void) {
+        m_msg = asdf_exc_helper("%s(%s::%s::%d): %s", CLSNAME(Sub), m_file.c_str(), m_func.c_str(), m_lineno, m_arg.c_str());
+    };
 };
 
 
 class FileNotFoundError : public Exception<FileNotFoundError> {
-    EXC_BODY(FileNotFoundError)
+    public: 
+        template <typename T, typename Q, typename Z>
+        FileNotFoundError(T arg, Q func, Z file, int line) : Exception(arg, func, file, line)
+    { 
+        init(); 
+    }; 
 };
 
 
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#define Exc_Create(exc, msg) exc(msg, __func__, __FILENAME__, __LINE__)
+#define Exc_Create(exc, msg) exc(msg, __func__, __FILENAME__, __LINE__)                            
 #define Exc_Create2(exc, fmt, ...) Exc_Create(exc, asdf_exc_helper(fmt, __VA_ARGS__))
 
 /* Funny name to help avoid name conflicts.... */
